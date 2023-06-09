@@ -1,0 +1,38 @@
+{
+  "name": "@introduction-to-computing/2590-game",
+  "version": "0.1.0",
+  "description": "CSU11022 project `2590-game`",
+  "main": "",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.scss.tcd.ie/introduction-to-computing/2590-game.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.scss.tcd.ie/introduction-to-computing/2590-game/-/issues"
+  },
+  "homepage": "https://gitlab.scss.tcd.ie/introduction-to-computing/2590-game",
+  "keywords": [
+    "xpack"
+  ],
+  "author": {
+    "name": "Jonathan Dukes",
+    "email": "jdukes@tcd.ie",
+    "url": "https://www.scss.tcd.ie"
+  },
+  "license": "MIT",
+  "config": {},
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "xpack": {
+    "minimumXpmRequired": "0.14.0",
+    "dependencies": {},
+    "devDependencies": {
+      "@xpack-dev-tools/arm-none-eabi-gcc": "11.2.1-1.1.1",
+      "@xpack-dev-tools/qemu-arm": "7.0.0-1.1",
+      "@xpack-dev-tools/windows-build-tools": "git+https://www.github.com/jdtcd/windows-build-tools-xpack#release-tcd",
+      "@xpack-dev-tools/openocd": "0.12.0-1.1"
+    }
+  }
+}

@@ -1,0 +1,117 @@
+   1              	# 0 "./src/definitions.s"
+   2              	# 1 "C:\\Users\\User\\IntroductionToComputingIISoftwareTemplates\\2590-game-2//"
+   0              	
+   0              	
+   0              	
+   1              	  .equ    GPIOE_BASE, 0x48001000
+   2              	  .equ    GPIOE_MODER, (GPIOE_BASE + 0x00)
+   3              	  .equ    GPIOE_OTYPER, (GPIOE_BASE + 0x04)
+   4              	  .equ    GPIOE_OSPEEDR, (GPIOE_BASE + 0x08)
+   5              	  .equ    GPIOE_PUPDR, (GPIOE_BASE + 0x0C)
+   6              	  .equ    GPIOE_IDR, (GPIOE_BASE + 0x10)
+   7              	  .equ    GPIOE_ODR, (GPIOE_BASE + 0x14)
+   8              	  .equ    GPIOE_BSRR, (GPIOE_BASE + 0x18)
+   9              	  .equ    GPIOE_LCKR, (GPIOE_BASE + 0x1C)
+  10              	  .equ    GPIOE_AFRL, (GPIOE_BASE + 0x20)
+  11              	  .equ    GPIOE_AFRH, (GPIOE_BASE + 0x24)
+  12              	
+  13              	  .equ    LEVEL1_CORRECT_ANSWER, 3
+  14              	  .equ    LEVEL2_CORRECT_ANSWER, 4
+  15              	  .equ    LEVEL3_CORRECT_ANSWER, 6
+  16              	  .equ    LEVEL4_CORRECT_ANSWER, 2
+  17              	  .equ    LEVEL5_CORRECT_ANSWER, 3
+  18              	  
+  19              	  .equ    LEVEL6_CORRECT_ANSWER, 1
+  20              	  .equ    LEVEL7_CORRECT_ANSWER, 7
+  21              	  .equ    LEVEL8_CORRECT_ANSWER, 4
+  22              	  .equ    LEVEL9_CORRECT_ANSWER, 5
+  23              	  .equ    LEVEL10_CORRECT_ANSWER, 6
+  24              	
+  25              	
+  26              	
+  27              	  .equ    RCC_BASE, 0x40021000
+  28              	  .equ    RCC_AHBENR, (RCC_BASE + 0x14)
+  29              	  .equ    RCC_AHBENR_GPIOEEN_BIT, 21
+  30              	
+  31              	  .equ    SYSTICK_BASE, 0xE000E010
+  32              	  .equ    SYSTICK_CSR, (SYSTICK_BASE + 0x00)
+  33              	  .equ    SYSTICK_LOAD, (SYSTICK_BASE + 0x04)
+  34              	  .equ    SYSTICK_VAL, (SYSTICK_BASE + 0x08)
+  35              	
+  36              	  .equ    SYSCFG_BASE, (0x40010000)
+  37              	  .equ    SYSCFG_EXTIICR1, (SYSCFG_BASE + 0x08)
+  38              	
+  39              	  .equ    NVIC_ISER, 0xE000E100
+  40              	
+  41              	  .equ    EXTI_BASE, 0x40010400
+  42              	  .equ    EXTI_IMR, (EXTI_BASE + 0x00)
+  43              	  .equ    EXTI_RTSR, (EXTI_BASE + 0x08)
+  44              	  .equ    EXTI_FTSR, (EXTI_BASE + 0x0C)
+  45              	  .equ    EXTI_PR, (EXTI_BASE + 0x14)
+  46              	
+  47              	  .equ    LD3_PIN, 9
+  48              	  .equ    LD4_PIN, 8
+  49              	  .equ    LD5_PIN, 10
+  50              	  .equ    LD6_PIN, 15
+  51              	  .equ    LD7_PIN, 11
+  52              	  .equ    LD8_PIN, 14
+  53              	  .equ    LD9_PIN, 12
+  54              	  .equ    LD10_PIN, 13
+  55              	  //.equ    current_LED_to_illuminate, 0
+  56              	
+  57              	  .equ    ALL_PINS, 0x0000FF00
+  58              	  
+  59              	  .equ    SCB_BASE, 0xE000ED00
+  60              	  .equ    SCB_ICSR, (SCB_BASE + 0x04)
+  61              	  .equ    SCB_ICSR_PENDSTCLR, (1<<25)
+DEFINED SYMBOLS
+ ./src/definitions.s:1      *ABS*:0000000048001000 GPIOE_BASE
+ ./src/definitions.s:2      *ABS*:0000000048001000 GPIOE_MODER
+ ./src/definitions.s:3      *ABS*:0000000048001004 GPIOE_OTYPER
+ ./src/definitions.s:4      *ABS*:0000000048001008 GPIOE_OSPEEDR
+ ./src/definitions.s:5      *ABS*:000000004800100c GPIOE_PUPDR
+ ./src/definitions.s:6      *ABS*:0000000048001010 GPIOE_IDR
+ ./src/definitions.s:7      *ABS*:0000000048001014 GPIOE_ODR
+ ./src/definitions.s:8      *ABS*:0000000048001018 GPIOE_BSRR
+ ./src/definitions.s:9      *ABS*:000000004800101c GPIOE_LCKR
+ ./src/definitions.s:10     *ABS*:0000000048001020 GPIOE_AFRL
+ ./src/definitions.s:11     *ABS*:0000000048001024 GPIOE_AFRH
+ ./src/definitions.s:13     *ABS*:0000000000000003 LEVEL1_CORRECT_ANSWER
+ ./src/definitions.s:14     *ABS*:0000000000000004 LEVEL2_CORRECT_ANSWER
+ ./src/definitions.s:15     *ABS*:0000000000000006 LEVEL3_CORRECT_ANSWER
+ ./src/definitions.s:16     *ABS*:0000000000000002 LEVEL4_CORRECT_ANSWER
+ ./src/definitions.s:17     *ABS*:0000000000000003 LEVEL5_CORRECT_ANSWER
+ ./src/definitions.s:19     *ABS*:0000000000000001 LEVEL6_CORRECT_ANSWER
+ ./src/definitions.s:20     *ABS*:0000000000000007 LEVEL7_CORRECT_ANSWER
+ ./src/definitions.s:21     *ABS*:0000000000000004 LEVEL8_CORRECT_ANSWER
+ ./src/definitions.s:22     *ABS*:0000000000000005 LEVEL9_CORRECT_ANSWER
+ ./src/definitions.s:23     *ABS*:0000000000000006 LEVEL10_CORRECT_ANSWER
+ ./src/definitions.s:27     *ABS*:0000000040021000 RCC_BASE
+ ./src/definitions.s:28     *ABS*:0000000040021014 RCC_AHBENR
+ ./src/definitions.s:29     *ABS*:0000000000000015 RCC_AHBENR_GPIOEEN_BIT
+ ./src/definitions.s:31     *ABS*:00000000e000e010 SYSTICK_BASE
+ ./src/definitions.s:32     *ABS*:00000000e000e010 SYSTICK_CSR
+ ./src/definitions.s:33     *ABS*:00000000e000e014 SYSTICK_LOAD
+ ./src/definitions.s:34     *ABS*:00000000e000e018 SYSTICK_VAL
+ ./src/definitions.s:36     *ABS*:0000000040010000 SYSCFG_BASE
+ ./src/definitions.s:37     *ABS*:0000000040010008 SYSCFG_EXTIICR1
+ ./src/definitions.s:39     *ABS*:00000000e000e100 NVIC_ISER
+ ./src/definitions.s:41     *ABS*:0000000040010400 EXTI_BASE
+ ./src/definitions.s:42     *ABS*:0000000040010400 EXTI_IMR
+ ./src/definitions.s:43     *ABS*:0000000040010408 EXTI_RTSR
+ ./src/definitions.s:44     *ABS*:000000004001040c EXTI_FTSR
+ ./src/definitions.s:45     *ABS*:0000000040010414 EXTI_PR
+ ./src/definitions.s:47     *ABS*:0000000000000009 LD3_PIN
+ ./src/definitions.s:48     *ABS*:0000000000000008 LD4_PIN
+ ./src/definitions.s:49     *ABS*:000000000000000a LD5_PIN
+ ./src/definitions.s:50     *ABS*:000000000000000f LD6_PIN
+ ./src/definitions.s:51     *ABS*:000000000000000b LD7_PIN
+ ./src/definitions.s:52     *ABS*:000000000000000e LD8_PIN
+ ./src/definitions.s:53     *ABS*:000000000000000c LD9_PIN
+ ./src/definitions.s:54     *ABS*:000000000000000d LD10_PIN
+ ./src/definitions.s:57     *ABS*:000000000000ff00 ALL_PINS
+ ./src/definitions.s:59     *ABS*:00000000e000ed00 SCB_BASE
+ ./src/definitions.s:60     *ABS*:00000000e000ed04 SCB_ICSR
+ ./src/definitions.s:61     *ABS*:0000000002000000 SCB_ICSR_PENDSTCLR
+
+NO UNDEFINED SYMBOLS

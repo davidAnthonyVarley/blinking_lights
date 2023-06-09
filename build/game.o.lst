@@ -1,0 +1,708 @@
+   1              	# 0 "./src/game.s"
+   2              	# 1 "C:\\Users\\User\\IntroductionToComputingIISoftwareTemplates\\2590-game-2//"
+   0              	
+   0              	
+   0              	
+   1              	# PASTE LINK TO TEAM VIDEO BELOW
+   2              	#
+   3              	#
+   4              	
+   5              	  .syntax unified
+   6              	  .cpu cortex-m4
+   7              	  .fpu softvfp
+   8              	  .thumb
+   9              	  
+  10              	  .global Main
+  11              	  .global  SysTick_Handler
+  12              	  .global EXTI0_IRQHandler
+  13              	
+  14              	  @ Definitions are in definitions.s to keep this file "clean"
+  15              	  .include "./src/definitions.s"
+   1              	  .equ    GPIOE_BASE, 0x48001000
+   2              	  .equ    GPIOE_MODER, (GPIOE_BASE + 0x00)
+   3              	  .equ    GPIOE_OTYPER, (GPIOE_BASE + 0x04)
+   4              	  .equ    GPIOE_OSPEEDR, (GPIOE_BASE + 0x08)
+   5              	  .equ    GPIOE_PUPDR, (GPIOE_BASE + 0x0C)
+   6              	  .equ    GPIOE_IDR, (GPIOE_BASE + 0x10)
+   7              	  .equ    GPIOE_ODR, (GPIOE_BASE + 0x14)
+   8              	  .equ    GPIOE_BSRR, (GPIOE_BASE + 0x18)
+   9              	  .equ    GPIOE_LCKR, (GPIOE_BASE + 0x1C)
+  10              	  .equ    GPIOE_AFRL, (GPIOE_BASE + 0x20)
+  11              	  .equ    GPIOE_AFRH, (GPIOE_BASE + 0x24)
+  12              	
+  13              	  .equ    LEVEL1_CORRECT_ANSWER, 3
+  14              	  .equ    LEVEL2_CORRECT_ANSWER, 4
+  15              	  .equ    LEVEL3_CORRECT_ANSWER, 9
+  16              	  .equ    LEVEL4_CORRECT_ANSWER, 2
+  17              	  .equ    LEVEL5_CORRECT_ANSWER, 3
+  18              	  
+  19              	  .equ    LEVEL6_CORRECT_ANSWER, 1
+  20              	  .equ    LEVEL7_CORRECT_ANSWER, 7
+  21              	  .equ    LEVEL8_CORRECT_ANSWER, 4
+  22              	  .equ    LEVEL9_CORRECT_ANSWER, 5
+  23              	  .equ    LEVEL10_CORRECT_ANSWER, 6
+  24              	
+  25              	
+  26              	
+  27              	  .equ    RCC_BASE, 0x40021000
+  28              	  .equ    RCC_AHBENR, (RCC_BASE + 0x14)
+  29              	  .equ    RCC_AHBENR_GPIOEEN_BIT, 21
+  30              	
+  31              	  .equ    SYSTICK_BASE, 0xE000E010
+  32              	  .equ    SYSTICK_CSR, (SYSTICK_BASE + 0x00)
+  33              	  .equ    SYSTICK_LOAD, (SYSTICK_BASE + 0x04)
+  34              	  .equ    SYSTICK_VAL, (SYSTICK_BASE + 0x08)
+  35              	
+  36              	  .equ    SYSCFG_BASE, (0x40010000)
+  37              	  .equ    SYSCFG_EXTIICR1, (SYSCFG_BASE + 0x08)
+  38              	
+  39              	  .equ    NVIC_ISER, 0xE000E100
+  40              	
+  41              	  .equ    EXTI_BASE, 0x40010400
+  42              	  .equ    EXTI_IMR, (EXTI_BASE + 0x00)
+  43              	  .equ    EXTI_RTSR, (EXTI_BASE + 0x08)
+  44              	  .equ    EXTI_FTSR, (EXTI_BASE + 0x0C)
+  45              	  .equ    EXTI_PR, (EXTI_BASE + 0x14)
+  46              	
+  47              	  .equ    LD3_PIN, 9
+  48              	  .equ    LD4_PIN, 8
+  49              	  .equ    LD5_PIN, 10
+  50              	  .equ    LD6_PIN, 15
+  51              	  .equ    LD7_PIN, 11
+  52              	  .equ    LD8_PIN, 14
+  53              	  .equ    LD9_PIN, 12
+  54              	  .equ    LD10_PIN, 13
+  55              	  //.equ    current_LED_to_illuminate, 0
+  56              	
+  57              	  .equ    ALL_PINS, 0x0000FF00
+  58              	  
+  59              	  .equ    SCB_BASE, 0xE000ED00
+  60              	  .equ    SCB_ICSR, (SCB_BASE + 0x04)
+  61              	  .equ    SCB_ICSR_PENDSTCLR, (1<<25)
+  16              	
+  17              	  .equ    REST_BLINK_PERIOD, 800 //ie, spend 1 second off, 1 second on if equal to 1000  
+  18              	
+  19              	  .section .text
+  20              	
+  21              	Main:
+  22 0000 30B5     	  PUSH  {R4-R5,LR}
+  23              	
+  24              	  //stage 0 = flash green light
+  25              	  //stage 1 = flash blinks
+  26              	  //stage 2 = flash red light
+  27              	  //stage 3 = flash orange lights
+  28              	  //stage 4 = flash success/failure lights
+  29              	
+  30 0002 B84C     	  LDR R4, =game_blink_period  //will be decremented
+  31 0004 40F2EE25 	  LDR R5, =750
+  32 0008 2560     	  STR R5, [R4]
+  33              	
+  34 000a B74C     	  LDR R4, =current_LED_to_illuminate
+  35 000c 4FF00005 	  LDR R5, =0
+  36 0010 2560     	  STR R5, [R4]
+  37              	
+  38 0012 B64C     	  LDR R4, =advance_to_next_level
+  39 0014 4FF00105 	  LDR R5, =1
+  40 0018 2560     	  STR R5, [R4]
+  41              	
+  42 001a B54C     	  LDR R4, =stage_in_animation
+  43 001c 4FF00005 	  LDR R5, =0
+  44 0020 2560     	  STR R5, [R4]
+  45              	
+  46 0022 B44C     	  LDR R4, =number_of_blinks
+  47 0024 4FF00005 	  LDR R5, =0
+  48 0028 2560     	  STR R5, [R4]
+  49              	
+  50 002a B34C     	  LDR R4, =wait_for_x_seconds
+  51 002c 4FF00005 	  LDR R5, =0
+  52 0030 2560     	  STR R5, [R4]
+  53              	
+  54 0032 B24C     	  LDR R4, =current_level //if current level==0, user has failed
+  55 0034 4FF00105 	  LDR R5, =1
+  56 0038 2560     	  STR R5, [R4]
+  57              	
+  58              	
+  59              	  @
+  60              	  @ Prepare GPIO Port E Pin 9 for output (LED LD3)
+  61              	  @ We'll blink LED LD3 (the orange LED)
+  62              	  @
+  63              	
+  64              	  @ Enable GPIO port E by enabling its clock
+  65 003a B14C     	  LDR     R4, =RCC_AHBENR
+  66 003c 2568     	  LDR     R5, [R4]
+  67 003e 45F40015 	  ORR     R5, R5, #(0b1 << (RCC_AHBENR_GPIOEEN_BIT))
+  68 0042 2560     	  STR     R5, [R4]
+  69              	
+  70              	  @ Configure LD3 for output
+  71              	  @   by setting bits 27:26 of GPIOE_MODER to 01 (GPIO Port E Mode Register)
+  72              	  @   (by BIClearing then ORRing)
+  73 0044 AF4C     	  LDR     R4, =GPIOE_MODER
+  74 0046 2568     	  LDR     R5, [R4]                    @ Read ...
+  75 0048 25F44025 	  BIC     R5, #(0b11<<(LD3_PIN*2))    @ Modify ...
+  76 004c 45F48025 	  ORR     R5, #(0b01<<(LD3_PIN*2))    @ write 01 to bits 
+  77              	
+  78 0050 25F44035 	  BIC     R5, #(0b11<<(LD4_PIN*2))    @ Modify ...
+  79 0054 45F48035 	  ORR     R5, #(0b01<<(LD4_PIN*2))    @ write 01 to bits 
+  80              	
+  81 0058 25F04065 	  BIC     R5, #(0b11<<(LD10_PIN*2))    @ Modify ...
+  82 005c 45F08065 	  ORR     R5, #(0b01<<(LD10_PIN*2))    @ write 01 to bits 
+  83              	
+  84 0060 25F44015 	  BIC     R5, #(0b11<<(LD5_PIN*2))    @ Modify ...
+  85 0064 45F48015 	  ORR     R5, #(0b01<<(LD5_PIN*2))    @ write 01 to bits 
+  86              	
+  87 0068 25F04045 	  BIC     R5, #(0b11<<(LD6_PIN*2))    @ Modify ...
+  88 006c 45F08045 	  ORR     R5, #(0b01<<(LD6_PIN*2))    @ write 01 to bits 
+  89              	
+  90 0070 25F44005 	  BIC     R5, #(0b11<<(LD7_PIN*2))    @ Modify ...
+  91 0074 45F48005 	  ORR     R5, #(0b01<<(LD7_PIN*2))    @ write 01 to bits 
+  92              	
+  93 0078 25F04055 	  BIC     R5, #(0b11<<(LD8_PIN*2))    @ Modify ...
+  94 007c 45F08055 	  ORR     R5, #(0b01<<(LD8_PIN*2))    @ write 01 to bits 
+  95              	
+  96 0080 25F04075 	  BIC     R5, #(0b11<<(LD9_PIN*2))    @ Modify ...
+  97 0084 45F08075 	  ORR     R5, #(0b01<<(LD9_PIN*2))    @ write 01 to bits 
+  98              	
+  99 0088 2560     	  STR     R5, [R4]                    @ Write 
+ 100              	
+ 101              	  @ Initialise the first countdown
+ 102              	
+ 103 008a 9F4C     	  LDR     R4, =blink_countdown
+ 104 008c 4FF44875 	  LDR     R5, =REST_BLINK_PERIOD
+ 105 0090 2560     	  STR     R5, [R4]  
+ 106              	
+ 107              	  @ Configure SysTick Timer to generate an interrupt every 1ms
+ 108              	
+ 109 0092 9E4C     	  LDR     R4, =SCB_ICSR               @ Clear any pre-existing interrupts
+ 110 0094 4FF00075 	  LDR     R5, =SCB_ICSR_PENDSTCLR     @
+ 111 0098 2560     	  STR     R5, [R4]                    @
+ 112              	
+ 113 009a 9D4C     	  LDR     R4, =SYSTICK_CSR            @ Stop SysTick timer
+ 114 009c 4FF00005 	  LDR     R5, =0                      @   by writing 0 to CSR
+ 115 00a0 2560     	  STR     R5, [R4]                    @   CSR is the Control and Status Register
+ 116              	  
+ 117 00a2 9C4C     	  LDR     R4, =SYSTICK_LOAD           @ Set SysTick LOAD for 1ms delay
+ 118 00a4 41F63F75 	  LDR     R5, =7999                   @ Assuming 8MHz clock
+ 119 00a8 2560     	  STR     R5, [R4]                    @ 
+ 120              	
+ 121 00aa 9B4C     	  LDR     R4, =SYSTICK_VAL            @   Reset SysTick internal counter to 0
+ 122 00ac 4FF00105 	  LDR     R5, =0x1                    @     by writing any value
+ 123 00b0 2560     	  STR     R5, [R4]
+ 124              	
+ 125 00b2 974C     	  LDR     R4, =SYSTICK_CSR            @   Start SysTick timer by setting CSR to 0x7
+ 126 00b4 4FF00705 	  LDR     R5, =0x7                    @     set CLKSOURCE (bit 2) to system clock (1)
+ 127 00b8 2560     	  STR     R5, [R4]                    @     set TICKINT (bit 1) to 1 to enable interrupts
+ 128              	                                      @     set ENABLE (bit 0) to 1
+ 129              	
+ 130              	
+ 131              	  @
+ 132              	  @ Prepare external interrupt Line 0 (USER pushbutton)
+ 133              	  @ We'll count the number of times the button is pressed
+ 134              	  @
+ 135              	
+ 136              	  @ Initialise count to zero
+ 137 00ba 984C     	  LDR   R4, =button_count             @ count = 0;
+ 138 00bc 4FF00005 	  MOV   R5, #0                        @
+ 139 00c0 2560     	  STR   R5, [R4]                      @
+ 140              	
+ 141              	  @ Configure USER pushbutton (GPIO Port A Pin 0 on STM32F3 Discovery
+ 142              	  @   kit) to use the EXTI0 external interrupt signal
+ 143              	  @ Determined by bits 3..0 of the External Interrrupt Control
+ 144              	  @   Register (EXTIICR)
+ 145 00c2 974C     	  LDR     R4, =SYSCFG_EXTIICR1
+ 146 00c4 2568     	  LDR     R5, [R4]
+ 147 00c6 25F00F05 	  BIC     R5, R5, #0b1111
+ 148 00ca 2560     	  STR     R5, [R4]
+ 149              	
+ 150              	  @ Enable (unmask) interrupts on external interrupt Line0
+ 151 00cc 954C     	  LDR     R4, =EXTI_IMR
+ 152 00ce 2568     	  LDR     R5, [R4]
+ 153 00d0 45F00105 	  ORR     R5, R5, #1
+ 154 00d4 2560     	  STR     R5, [R4]
+ 155              	
+ 156              	  @ Set falling edge detection on Line0
+ 157 00d6 944C     	  LDR     R4, =EXTI_FTSR
+ 158 00d8 2568     	  LDR     R5, [R4]
+ 159 00da 45F00105 	  ORR     R5, R5, #1
+ 160 00de 2560     	  STR     R5, [R4]
+ 161              	
+ 162              	  @ Enable NVIC interrupt #6 (external interrupt Line0)
+ 163 00e0 924C     	  LDR     R4, =NVIC_ISER
+ 164 00e2 4FF04005 	  MOV     R5, #(1<<6)
+ 165 00e6 2560     	  STR     R5, [R4]
+ 166              	
+ 167              	  @ Nothing else to do in Main
+ 168              	  @ Idle loop forever (welcome to interrupts!!)
+ 169              	Idle_Loop:
+ 170 00e8 FEE7     	  B     Idle_Loop
+ 171              	  
+ 172              	End_Main:
+ 173 00ea 30BD     	  POP   {R4-R5,PC}
+ 174              	
+ 175              	
+ 176              	
+ 177              	@
+ 178              	@ SysTick interrupt handler (blink LED LD3)
+ 179              	@
+ 181              	SysTick_Handler:
+ 182              	
+ 183 00ec F0B5     	  PUSH  {R4-R7, LR}
+ 184              	
+ 185 00ee 864C     	  LDR   R4, =blink_countdown        @ if (countdown != 0) {
+ 186 00f0 2568     	  LDR   R5, [R4]                    @
+ 187 00f2 002D     	  CMP   R5, #0                      @
+ 188 00f4 03D0     	  BEQ   .LelseFire                  @
+ 189              	
+ 190 00f6 A5F10105 	  SUB   R5, R5, #1                  @   countdown = countdown - 1;
+ 191 00fa 2560     	  STR   R5, [R4]                    @
+ 192              	
+ 193 00fc 39E0     	  B     .LendIfDelay                @ }
+ 194              	
+ 195              	.LelseFire:                         @ else {
+ 196              	
+ 197              	// this is where code is executed every 1 second --------------------------------------------------
+ 198              	  
+ 199              	  
+ 200 00fe 7E4C     	  LDR R4, =wait_for_x_seconds //if you want two flashes, wait_for_x_seconds = 4
+ 201 0100 2568     	  LDR R5, [R4]
+ 202              	
+ 203 0102 002D     	  CMP R5, #0
+ 204 0104 01D1     	  BNE .LDontMoveToNextStageInLevelDisplay
+ 205 0106 00F046F8 	  BL  DisplayLevel
+ 206              	
+ 207              	.LDontMoveToNextStageInLevelDisplay:
+ 208              	
+ 209 010a 7B4C     	  LDR R4, =wait_for_x_seconds
+ 210 010c 2568     	  LDR R5, [R4]
+ 211              	
+ 212 010e A5F10105 	  SUB R5, R5, #1
+ 213 0112 2560     	  STR R5, [R4]
+ 214              	
+ 215              	
+ 216              	
+ 217 0114 864C     	  LDR     R4, =GPIOE_ODR            @   Invert LED
+ 218 0116 2568     	  LDR     R5, [R4]                  @
+ 219              	
+ 220              	
+ 221 0118 734E     	  LDR     R6, =current_LED_to_illuminate
+ 222 011a 3768     	  LDR     R7, [R6]
+ 223              	 
+ 224 011c 30B4     	  PUSH {R4, R5}
+ 225 011e 744C     	  LDR R4, =stage_in_animation
+ 226 0120 2568     	  LDR R5, [R4]
+ 227              	  
+ 228 0122 052D     	  CMP R5, #5
+ 229 0124 07D0     	  BEQ .LIlluminateAllLEDS
+ 230              	
+ 231 0126 30BC     	  POP {R4, R5}
+ 232              	
+ 233 0128 4FF00106 	  MOV     R6, #0b1
+ 234 012c 06FA07F7 	  MOV     R7, R6, LSL R7
+ 235 0130 85EA0705 	  EOR     R5, R5, R7
+ 236              	  //STR     R5, [R4]     
+ 237              	
+ 238              	
+ 239 0134 10E0     	  B       .LSetBlinkPeriod
+ 240              	
+ 241              	.LIlluminateAllLEDS:
+ 242 0136 30BC     	  POP {R4, R5}
+ 243              	
+ 244              	
+ 245 0138 85F40075 	  EOR R5, #(0b1<<(LD3_PIN))
+ 246 013c 85F48075 	  EOR R5, #(0b1<<(LD4_PIN))
+ 247 0140 85F48065 	  EOR R5, #(0b1<<(LD5_PIN))
+ 248 0144 85F40045 	  EOR R5, #(0b1<<(LD6_PIN))
+ 249              	
+ 250 0148 85F40065 	  EOR R5, #(0b1<<(LD7_PIN))
+ 251 014c 85F48045 	  EOR R5, #(0b1<<(LD8_PIN))
+ 252 0150 85F48055 	  EOR R5, #(0b1<<(LD9_PIN))
+ 253 0154 85F40055 	  EOR R5, #(0b1<<(LD10_PIN))
+ 254              	
+ 255              	  
+ 256              	
+ 257              	
+ 258              	
+ 259              	.LSetBlinkPeriod:
+ 260 0158 2560     	  STR R5, [R4]
+ 261              	
+ 262              	
+ 263 015a 6B4C     	  LDR     R4, =blink_countdown      @   countdown = BLINK_PERIOD;
+ 264              	
+ 265 015c 644E     	  LDR R6, =stage_in_animation
+ 266 015e 3768     	  LDR R7, [R6]
+ 267              	
+ 268 0160 022F     	  CMP R7, #2  //if==2, blue lights are flashing
+ 269              	
+ 270 0162 03D1     	  BNE .LRestBlink
+ 271              	
+ 272 0164 5F4E     	  LDR R6, =game_blink_period
+ 273 0166 3568     	  LDR R5, [R6]
+ 274 0168 2560     	  STR R5, [R4]
+ 275 016a 02E0     	  B   .LendIfDelay
+ 276              	
+ 277              	.LRestBlink:
+ 278 016c 4FF44875 	  LDR     R5, =REST_BLINK_PERIOD         @
+ 279 0170 2560     	  STR     R5, [R4]                  @
+ 280              	
+ 281              	.LendIfDelay:                       @ }
+ 282              	
+ 283 0172 664C     	  LDR     R4, =SCB_ICSR             @ Clear (acknowledge) the interrupt
+ 284 0174 4FF00075 	  LDR     R5, =SCB_ICSR_PENDSTCLR   @
+ 285 0178 2560     	  STR     R5, [R4]                  @
+ 286              	
+ 287              	  @ Return from interrupt handler
+ 288 017a F0BD     	  POP  {R4-R7, PC}
+ 289              	
+ 290              	
+ 291              	
+ 292              	@
+ 293              	@ External interrupt line 0 interrupt handler
+ 294              	@   (count button presses)
+ 295              	@
+ 297              	EXTI0_IRQHandler:
+ 298              	
+ 299 017c 30B5     	  PUSH  {R4,R5,LR}
+ 300              	
+ 301 017e 5C4C     	  LDR R4, =stage_in_animation
+ 302 0180 2568     	  LDR R5, [R4]
+ 303              	  
+ 304              	  // if stage_in_animation==4, orange lights are flashing
+ 305              	//  CMP R5, #4
+ 306              	//  BNE .LDontChangeTimer
+ 307              	//
+ 308              	//  LDR R4, =wait_for_x_seconds
+ 309              	//  LDR R5, =4
+ 310              	//  STR R5, [R4]
+ 311              	//
+ 312              	//.LDontChangeTimer:
+ 313              	
+ 314 0182 664C     	  LDR   R4, =button_count           @ count = count + 1
+ 315 0184 2568     	  LDR   R5, [R4]                    @
+ 316 0186 05F10105 	  ADD   R5, R5, #1                  @
+ 317 018a 2560     	  STR   R5, [R4]                    @
+ 318              	
+ 319 018c 694C     	  LDR   R4, =EXTI_PR                @ Clear (acknowledge) the interrupt
+ 320 018e 4FF00105 	  MOV   R5, #(1<<0)                 @
+ 321 0192 2560     	  STR   R5, [R4]                    @
+ 322              	
+ 323              	  @ Return from interrupt handler
+ 324 0194 30BD     	  POP  {R4,R5,PC}
+ 325              	
+ 326              	
+ 327              	
+ 328              	DisplayLevel:
+ 329 0196 F0B5     	  PUSH {R4-R7, LR}
+ 330              	
+ 331 0198 00F05AF8 	  BL FindNumberOfBlinks
+ 332              	  //number of blinks not returned in R0, it is saved at number_of_blinks
+ 333              	
+ 334 019c 544C     	  LDR R4, =stage_in_animation
+ 335 019e 2568     	  LDR R5, [R4]
+ 336              	  
+ 337              	
+ 338 01a0 002D     	  CMP R5, #0
+ 339 01a2 2CD0     	  BEQ .LFlashGreenLights
+ 340 01a4 012D     	  CMP R5, #1
+ 341 01a6 08D0     	  BEQ .LFlashCurrentLevelLights
+ 342 01a8 022D     	  CMP R5, #2
+ 343 01aa 1CD0     	  BEQ .LFlashRedLights
+ 344 01ac 032D     	  CMP R5, #3
+ 345 01ae 0FD0     	  BEQ .LFlashOrangeLights
+ 346 01b0 042D     	  CMP R5, #4
+ 347 01b2 2BD0     	  BEQ .LFlashResultLights
+ 348              	  
+ 349              	  //if not equal to any of the above, it is five and needs to be reset
+ 350 01b4 4FF00005 	  MOV R5, #0
+ 351 01b8 21E0     	  B   .LFlashGreenLights
+ 352              	
+ 353              	
+ 354              	
+ 355              	.LFlashCurrentLevelLights:
+ 356 01ba 4B4C     	  LDR R4, =current_LED_to_illuminate
+ 357 01bc 4FF00C05 	  LDR R5, =LD9_PIN
+ 358 01c0 2560     	  STR R5, [R4]
+ 359              	
+ 360 01c2 4C4C     	  LDR R4, =number_of_blinks
+ 361 01c4 2568     	  LDR R5, [R4]
+ 362 01c6 4FF00204 	  MOV R4, #2
+ 363 01ca 05FB04F5 	  MUL R5, R5, R4
+ 364              	
+ 365 01ce 31E0     	  B   .LEndDisplaySR
+ 366              	
+ 367              	.LFlashOrangeLights:
+ 368 01d0 524C     	  LDR R4, =button_count
+ 369 01d2 4FF00005 	  MOV R5, #0
+ 370 01d6 2560     	  STR R5, [R4]
+ 371              	
+ 372              	  //this way, you can't press the button during the blue lights
+ 373              	
+ 374 01d8 434C     	  LDR R4, =current_LED_to_illuminate
+ 375 01da 4FF00E05 	  LDR R5, =LD8_PIN
+ 376 01de 2560     	  STR R5, [R4]
+ 377              	
+ 378 01e0 4FF00805 	  LDR R5, =8  //on for 1 sec, off for 1 sec, on for 1 sec, off for 1 sec
+ 379 01e4 26E0     	  B   .LEndDisplaySR
+ 380              	
+ 381              	.LFlashRedLights:
+ 382 01e6 3F4C     	  LDR R4, =game_blink_period
+ 383 01e8 2568     	  LDR R5, [R4]
+ 384 01ea A5F13205 	  SUB R5, R5, #50
+ 385 01ee 2560     	  STR R5, [R4]
+ 386              	
+ 387 01f0 3D4C     	  LDR R4, =current_LED_to_illuminate
+ 388 01f2 4FF00D05 	  LDR R5, =LD10_PIN
+ 389 01f6 2560     	  STR R5, [R4]
+ 390              	
+ 391 01f8 4FF00405 	  LDR R5, =4  //on for 1 sec, off for 1 sec, on for 1 sec, off for 1 sec 
+ 392 01fc 1AE0     	  B   .LEndDisplaySR
+ 393              	
+ 394              	.LFlashGreenLights:
+ 395 01fe 3A4C     	  LDR R4, =current_LED_to_illuminate
+ 396 0200 4FF00F05 	  LDR R5, =LD6_PIN
+ 397 0204 2560     	  STR R5, [R4]
+ 398              	
+ 399 0206 4FF00405 	  LDR R5, =4  //on for 1 sec, off for 1 sec, on for 1 sec, off for 1 sec 
+ 400 020a 13E0     	  B   .LEndDisplaySR
+ 401              	
+ 402              	
+ 403              	.LFlashResultLights:
+ 404 020c 434C     	  LDR R4, =button_count
+ 405 020e 2568     	  LDR R5, [R4]
+ 406              	
+ 407 0210 384E     	  LDR R6, =number_of_blinks
+ 408 0212 3768     	  LDR R7, [R6]
+ 409              	
+ 410 0214 BD42     	  CMP R5, R7
+ 411 0216 4DD1     	  BNE .LFailure
+ 412              	
+ 413              	
+ 414 0218 334C     	  LDR R4, =current_LED_to_illuminate
+ 415 021a 4FF47F45 	  MOV R5, ALL_PINS
+ 416 021e 2560     	  STR R5, [R4]
+ 417              	
+ 418 0220 364C     	  LDR R4, =current_level
+ 419 0222 2568     	  LDR R5, [R4]
+ 420              	
+ 421 0224 072D     	  CMP R5, #7     // HOW MANY LEVELS, if #11, 10 levels
+ 422 0226 53D0     	  BEQ .LPlayerWins
+ 423 0228 05F10105 	  ADD R5, R5, #1
+ 424 022c 2560     	  STR R5, [R4]
+ 425              	
+ 426 022e 4FF00405 	  LDR R5, =4
+ 427              	
+ 428 0232 FFE7     	  B   .LEndDisplaySR
+ 429              	
+ 430              	.LEndDisplaySR:
+ 431 0234 304C     	  LDR R4, =wait_for_x_seconds
+ 432 0236 2560     	  STR R5, [R4]
+ 433              	
+ 434 0238 2D4C     	  LDR R4, =stage_in_animation
+ 435 023a 2568     	  LDR R5, [R4]
+ 436              	
+ 437 023c 052D     	  CMP R5, #5
+ 438 023e 03DA     	  BGE .LReset
+ 439 0240 05F10105 	  ADD R5, R5, #1
+ 440 0244 2560     	  STR R5, [R4]
+ 441              	
+ 442 0246 F0BD     	  POP  {R4-R7, PC}
+ 443              	
+ 444              	
+ 445              	.LReset:
+ 446 0248 4FF00105 	  MOV R5, #1
+ 447 024c 2560     	  STR R5, [R4]
+ 448              	
+ 449 024e F0BD     	  POP  {R4-R7, PC}
+ 450              	
+ 451              	
+ 452              	
+ 453              	
+ 454              	
+ 455              	
+ 456              	FindNumberOfBlinks:
+ 457 0250 30B5     	  PUSH {R4, R5, LR}
+ 458              	
+ 459 0252 2A4C     	  LDR R4, =current_level
+ 460 0254 2568     	  LDR R5, [R4]
+ 461              	//  wont add display failure routine for case 0 here
+ 462              	
+ 463 0256 012D     	  CMP R5, #1
+ 464 0258 11D0     	  BEQ .LoadLevel1
+ 465 025a 022D     	  CMP R5, #2
+ 466 025c 12D0     	  BEQ .LoadLevel2
+ 467 025e 032D     	  CMP R5, #3
+ 468 0260 13D0     	  BEQ .LoadLevel3
+ 469 0262 042D     	  CMP R5, #4
+ 470 0264 14D0     	  BEQ .LoadLevel4
+ 471 0266 052D     	  CMP R5, #5
+ 472 0268 09D0     	  BEQ .LoadLevel1 //level 1 and 5 == 3, likewise for 2 and 8 =4
+ 473              	
+ 474 026a 062D     	  CMP R5, #6
+ 475 026c 13D0     	  BEQ .LoadLevel6
+ 476 026e 072D     	  CMP R5, #7
+ 477 0270 14D0     	  BEQ .LoadLevel7
+ 478 0272 082D     	  CMP R5, #8
+ 479 0274 06D0     	  BEQ .LoadLevel2
+ 480 0276 092D     	  CMP R5, #9
+ 481 0278 13D0     	  BEQ .LoadLevel9
+ 482 027a 0A2D     	  CMP R5, #10
+ 483 027c 14D0     	  BEQ .LoadLevel10
+ 484              	
+ 485              	
+ 486              	.LoadLevel1:
+ 487 027e 4FF00305 	  MOV R5, LEVEL1_CORRECT_ANSWER
+ 488 0282 14E0     	  B  .LBlinksFound
+ 489              	.LoadLevel2:
+ 490 0284 4FF00405 	  MOV R5, LEVEL2_CORRECT_ANSWER
+ 491 0288 11E0     	  B  .LBlinksFound
+ 492              	
+ 493              	  .LoadLevel3:
+ 494 028a 4FF00905 	  MOV R5, LEVEL3_CORRECT_ANSWER
+ 495 028e 0EE0     	  B  .LBlinksFound
+ 496              	.LoadLevel4:
+ 497 0290 4FF00205 	  MOV R5, LEVEL4_CORRECT_ANSWER
+ 498 0294 0BE0     	  B  .LBlinksFound
+ 499              	
+ 500              	.LoadLevel6:
+ 501 0296 4FF00105 	  MOV R5, LEVEL6_CORRECT_ANSWER
+ 502 029a 08E0     	  B  .LBlinksFound
+ 503              	.LoadLevel7:
+ 504 029c 4FF00705 	  MOV R5, LEVEL7_CORRECT_ANSWER
+ 505 02a0 05E0     	  B  .LBlinksFound
+ 506              	
+ 507              	.LoadLevel9:
+ 508 02a2 4FF00505 	  MOV R5, LEVEL9_CORRECT_ANSWER
+ 509 02a6 02E0     	  B  .LBlinksFound
+ 510              	.LoadLevel10:
+ 511 02a8 4FF00605 	  MOV R5, LEVEL10_CORRECT_ANSWER
+ 512 02ac FFE7     	  B  .LBlinksFound
+ 513              	
+ 514              	
+ 515              	.LBlinksFound:
+ 516 02ae 114C     	  LDR R4, =number_of_blinks
+ 517 02b0 2560     	  STR R5, [R4]
+ 518 02b2 30BD     	  POP  {R4, R5, PC}
+ 519              	
+ 520              	
+ 521              	.LFailure:
+ 522 02b4 1E4C     	  LDR R4, =GPIOE_ODR
+ 523 02b6 4FF00005 	  LDR R5, =0
+ 524 02ba 2560     	  STR R5, [R4]
+ 525              	
+ 526 02bc 45F48045 	  ORR R5, #(0b1<<(LD8_PIN))
+ 527 02c0 45F48065 	  ORR R5, #(0b1<<(LD5_PIN))
+ 528              	
+ 529              	
+ 530 02c4 85F40075 	  EOR R5, #(0b1<<(LD3_PIN))
+ 531 02c8 85F40055 	  EOR R5, #(0b1<<(LD10_PIN))
+ 532 02cc 2560     	  STR R5, [R4]
+ 533              	
+ 534 02ce 08E0     	  B .LFinished
+ 535              	
+ 536              	.LPlayerWins:
+ 537 02d0 174C     	  LDR R4, =GPIOE_ODR
+ 538 02d2 4FF00005 	  MOV R5, #0
+ 539 02d6 2560     	  STR R5, [R4]
+ 540              	
+ 541              	
+ 542 02d8 85F40045 	  EOR R5, #(0b1<<(LD6_PIN))
+ 543 02dc 85F40065 	  EOR R5, #(0b1<<(LD7_PIN))
+ 544 02e0 2560     	  STR R5, [R4]
+ 545              	
+ 546              	
+ 547              	.LFinished:
+ 548 02e2 FEE7     	B .LFinished
+ 549              	
+ 550              	  .section .data
+ 551              	current_LED_to_illuminate:
+ 552 0000 00000000 	  .space  4
+ 553              	advance_to_next_level:
+ 554 0004 00000000 	  .space  4
+ 555              	number_of_blinks:
+ 556 0008 00000000 	  .space  4
+ 557              	current_level:
+ 558 000c 00000000 	  .space   4
+ 559              	
+ 560              	
+ 561              	wait_for_x_seconds:
+ 562 0010 00000000 	  .space  4
+ 563              	stage_in_animation:
+ 564 0014 00000000 	  .space  4
+ 565              	button_count:
+ 566 0018 00000000 	  .space  4
+ 567              	
+ 568              	blink_countdown:
+ 569 001c 00000000 	  .space  4
+ 570              	game_blink_period:
+ 571 0020 00000000 	  .space  4
+ 572              	
+ 573              	  .end...
+DEFINED SYMBOLS
+        ./src/game.s:21     .text:0000000000000000 Main
+        ./src/game.s:181    .text:00000000000000ec SysTick_Handler
+        ./src/game.s:297    .text:000000000000017c EXTI0_IRQHandler
+ ./src/definitions.s:1      *ABS*:0000000048001000 GPIOE_BASE
+ ./src/definitions.s:2      *ABS*:0000000048001000 GPIOE_MODER
+ ./src/definitions.s:3      *ABS*:0000000048001004 GPIOE_OTYPER
+ ./src/definitions.s:4      *ABS*:0000000048001008 GPIOE_OSPEEDR
+ ./src/definitions.s:5      *ABS*:000000004800100c GPIOE_PUPDR
+ ./src/definitions.s:6      *ABS*:0000000048001010 GPIOE_IDR
+ ./src/definitions.s:7      *ABS*:0000000048001014 GPIOE_ODR
+ ./src/definitions.s:8      *ABS*:0000000048001018 GPIOE_BSRR
+ ./src/definitions.s:9      *ABS*:000000004800101c GPIOE_LCKR
+ ./src/definitions.s:10     *ABS*:0000000048001020 GPIOE_AFRL
+ ./src/definitions.s:11     *ABS*:0000000048001024 GPIOE_AFRH
+ ./src/definitions.s:13     *ABS*:0000000000000003 LEVEL1_CORRECT_ANSWER
+ ./src/definitions.s:14     *ABS*:0000000000000004 LEVEL2_CORRECT_ANSWER
+ ./src/definitions.s:15     *ABS*:0000000000000009 LEVEL3_CORRECT_ANSWER
+ ./src/definitions.s:16     *ABS*:0000000000000002 LEVEL4_CORRECT_ANSWER
+ ./src/definitions.s:17     *ABS*:0000000000000003 LEVEL5_CORRECT_ANSWER
+ ./src/definitions.s:19     *ABS*:0000000000000001 LEVEL6_CORRECT_ANSWER
+ ./src/definitions.s:20     *ABS*:0000000000000007 LEVEL7_CORRECT_ANSWER
+ ./src/definitions.s:21     *ABS*:0000000000000004 LEVEL8_CORRECT_ANSWER
+ ./src/definitions.s:22     *ABS*:0000000000000005 LEVEL9_CORRECT_ANSWER
+ ./src/definitions.s:23     *ABS*:0000000000000006 LEVEL10_CORRECT_ANSWER
+ ./src/definitions.s:27     *ABS*:0000000040021000 RCC_BASE
+ ./src/definitions.s:28     *ABS*:0000000040021014 RCC_AHBENR
+ ./src/definitions.s:29     *ABS*:0000000000000015 RCC_AHBENR_GPIOEEN_BIT
+ ./src/definitions.s:31     *ABS*:00000000e000e010 SYSTICK_BASE
+ ./src/definitions.s:32     *ABS*:00000000e000e010 SYSTICK_CSR
+ ./src/definitions.s:33     *ABS*:00000000e000e014 SYSTICK_LOAD
+ ./src/definitions.s:34     *ABS*:00000000e000e018 SYSTICK_VAL
+ ./src/definitions.s:36     *ABS*:0000000040010000 SYSCFG_BASE
+ ./src/definitions.s:37     *ABS*:0000000040010008 SYSCFG_EXTIICR1
+ ./src/definitions.s:39     *ABS*:00000000e000e100 NVIC_ISER
+ ./src/definitions.s:41     *ABS*:0000000040010400 EXTI_BASE
+ ./src/definitions.s:42     *ABS*:0000000040010400 EXTI_IMR
+ ./src/definitions.s:43     *ABS*:0000000040010408 EXTI_RTSR
+ ./src/definitions.s:44     *ABS*:000000004001040c EXTI_FTSR
+ ./src/definitions.s:45     *ABS*:0000000040010414 EXTI_PR
+ ./src/definitions.s:47     *ABS*:0000000000000009 LD3_PIN
+ ./src/definitions.s:48     *ABS*:0000000000000008 LD4_PIN
+ ./src/definitions.s:49     *ABS*:000000000000000a LD5_PIN
+ ./src/definitions.s:50     *ABS*:000000000000000f LD6_PIN
+ ./src/definitions.s:51     *ABS*:000000000000000b LD7_PIN
+ ./src/definitions.s:52     *ABS*:000000000000000e LD8_PIN
+ ./src/definitions.s:53     *ABS*:000000000000000c LD9_PIN
+ ./src/definitions.s:54     *ABS*:000000000000000d LD10_PIN
+ ./src/definitions.s:57     *ABS*:000000000000ff00 ALL_PINS
+ ./src/definitions.s:59     *ABS*:00000000e000ed00 SCB_BASE
+ ./src/definitions.s:60     *ABS*:00000000e000ed04 SCB_ICSR
+ ./src/definitions.s:61     *ABS*:0000000002000000 SCB_ICSR_PENDSTCLR
+        ./src/game.s:17     *ABS*:0000000000000320 REST_BLINK_PERIOD
+        ./src/game.s:22     .text:0000000000000000 $t
+        ./src/game.s:570    .data:0000000000000020 game_blink_period
+        ./src/game.s:551    .data:0000000000000000 current_LED_to_illuminate
+        ./src/game.s:553    .data:0000000000000004 advance_to_next_level
+        ./src/game.s:563    .data:0000000000000014 stage_in_animation
+        ./src/game.s:555    .data:0000000000000008 number_of_blinks
+        ./src/game.s:561    .data:0000000000000010 wait_for_x_seconds
+        ./src/game.s:557    .data:000000000000000c current_level
+        ./src/game.s:568    .data:000000000000001c blink_countdown
+        ./src/game.s:565    .data:0000000000000018 button_count
+        ./src/game.s:169    .text:00000000000000e8 Idle_Loop
+        ./src/game.s:172    .text:00000000000000ea End_Main
+        ./src/game.s:328    .text:0000000000000196 DisplayLevel
+        ./src/game.s:456    .text:0000000000000250 FindNumberOfBlinks
+        ./src/game.s:552    .data:0000000000000000 $d
+        ./src/game.s:573    .text:00000000000002e4 $d
+
+NO UNDEFINED SYMBOLS

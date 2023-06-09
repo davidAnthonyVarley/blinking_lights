@@ -1,0 +1,110 @@
+{
+  "name": "@xpack-dev-tools/windows-build-tools",
+  "version": "4.3.0-1.1",
+  "description": "A binary xPack with the Windows Build Tools executables.",
+  "main": "",
+  "scripts": {
+    "npm-install": "npm install",
+    "pack": "npm pack",
+    "version-patch": "npm version patch",
+    "version-minor": "npm version minor",
+    "postversion": "git push origin --all && git push origin --tags",
+    "git-log": "git log --pretty='%cd * %h %s' --date=short",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "liquidjs": "liquidjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jdtcd/windows-build-tools-xpack.git/"
+  },
+  "bugs": {
+    "url": "https://github.com/jdtcd/windows-build-tools-xpack/issues/"
+  },
+  "homepage": "https://github.com/jdtcd/windows-build-tools-xpack#readme",
+  "keywords": [
+    "xpack",
+    "make",
+    "sh",
+    "build"
+  ],
+  "author": {
+    "name": "Liviu Ionescu",
+    "email": "ilg@livius.net",
+    "url": "https://github.com/ilg-ul/"
+  },
+  "contributors": [
+    {
+      "name": "Jonathan Dukes",
+      "email": "jdukes@tcd.ie",
+      "url": "https://www.scss.tcd.ie"
+      }
+  ],
+  "license": "MIT",
+  "xpack": {
+    "minimumXpmRequired": "0.10.2",
+    "binaries": {
+      "destination": "./.content",
+      "baseUrl": "https://github.com/xpack-dev-tools/windows-build-tools-xpack/releases/download/v4.3.0-1",
+      "skip": 1,
+      "platforms": {
+        "linux-ia32": {
+          "skip": true
+        },
+        "linux-arm64": {
+          "skip": true
+        },
+        "linux-arm": {
+          "skip": true
+        },
+        "linux-x64": {
+          "skip": true
+        },
+        "darwin-x64": {
+          "skip": true
+        },
+        "darwin-arm64": {
+          "skip": true
+        },
+        "win32-x64": {
+          "fileName": "xpack-windows-build-tools-4.3.0-1-win32-x64.zip",
+          "sha256": "9b636ff411b47c642a3d8a7e1d143acb71a11b4f8370d9f7dda8d9c848339806"
+        }
+      }
+    },
+    "bin": {
+      "make": "./.content/bin/make.exe",
+      "busybox": "./.content/bin/busybox.exe",
+      "echo": "./.content/bin/echo.exe",
+      "mkdir": "./.content/bin/mkdir.exe",
+      "rm": "./.content/bin/rm.exe",
+      "sh": "./.content/bin/sh.exe",
+      "cp": "./.content/bin/cp.exe"
+    },
+    "properties": {
+      "appName": "Windows Build Tools",
+      "appLCName": "windows-build-tools",
+      "platforms": "win32-x64",
+      "LIQUIDJS": "liquidjs '{ \"APP_NAME\": \"{{ properties.appName }}\", \"APP_LC_NAME\": \"{{ properties.appLCName }}\", \"platforms\": \"{{ properties.platforms }}\" }'"
+    },
+    "actions": {
+      "generate-workflows": [
+        "mkdir -p .github/workflows/",
+        "cp scripts/helper/templates/body-github-pre-releases-test.md .github/workflows/",
+        "cat scripts/helper/templates/build-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-all.yml",
+        "cat scripts/helper/templates/test-prime-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-prime.yml",
+        "cat scripts/helper/templates/publish-release-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/publish-release.yml",
+        "cat scripts/helper/templates/test-xpm-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-xpm.yml"
+      ],
+      "trigger-workflow-build-all": "bash scripts/helper/trigger-workflow-build.sh",
+      "trigger-workflow-test-prime": "bash scripts/helper/tests/trigger-workflow-test-prime.sh",
+      "trigger-workflow-publish-release": "bash scripts/helper/trigger-workflow-publish-release.sh",
+      "generate-jekyll-post": "bash scripts/helper/generate-jekyll-post.sh",
+      "update-package-binaries": "bash scripts/helper/update-package-binaries.sh",
+      "trigger-workflow-test-xpm": "bash scripts/helper/tests/trigger-workflow-test-xpm.sh"
+    }
+  },
+  "bundleDependencies": [],
+  "devDependencies": {
+    "liquidjs": "^9.25.1"
+  }
+}

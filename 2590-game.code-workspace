@@ -1,0 +1,45 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cortex-debug.armToolchainPath.windows": "${workspaceFolder}\\xpacks\\.bin",
+		"cortex-debug.gdbPath.windows": "${workspaceFolder}\\xpacks\\.bin\\arm-none-eabi-gdb.cmd",
+		"cortex-debug.objdumpPath.windows": "${workspaceFolder}\\xpacks\\.bin\\arm-none-eabi-objdump.cmd",
+		
+		"cortex-debug.armToolchainPath.osx": "${workspaceFolder}/xpacks/.bin",
+		"cortex-debug.gdbPath.osx": "${workspaceFolder}/xpacks/.bin/arm-none-eabi-gdb",
+		"cortex-debug.objdumpPath.osx": "${workspaceFolder}/xpacks/.bin/arm-none-eabi-objdump",
+		
+		"cortex-debug.armToolchainPath.linux": "${workspaceFolder}/xpacks/.bin",
+		"cortex-debug.gdbPath.linux": "${workspaceFolder}/xpacks/.bin/arm-none-eabi-gdb",
+		"cortex-debug.objdumpPath.linux": "${workspaceFolder}/xpacks/.bin/arm-none-eabi-objdump",
+		
+		"files.exclude": {
+			".vscode": true,
+			".devcontainer": true,
+			"build": true,
+			"xpacks": true,
+			".gitignore": true,
+			"Makefile": true,
+			"package.json": true,
+			"support": true
+		},
+		"terminal.integrated.automationProfile.windows": {
+			"path": "C:\\Program Files\\Git\\bin\\bash.exe"
+		},	
+		"task.allowAutomaticTasks": "on",
+		"cSpell.diagnosticLevel": "Hint",
+		"cortex-debug.variableUseNaturalFormat": false
+	},
+	"extensions": {
+		"recommendations": [
+		  "dan-c-underwood.arm",
+		  "marus25.cortex-debug",
+		  "marus25.cortex-debug-dp-stm32f1",
+		  "ms-vscode-remote.remote-ssh"
+		]
+	}    
+}

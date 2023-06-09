@@ -1,0 +1,150 @@
+{
+  "name": "@xpack-dev-tools/arm-none-eabi-gcc",
+  "version": "11.2.1-1.1.1",
+  "description": "A binary xPack with the GNU Arm Embedded GCC toolchain executables",
+  "main": "",
+  "scripts": {
+    "npm-install": "npm install",
+    "pack": "npm pack",
+    "version-patch": "npm version patch",
+    "version-minor": "npm version minor",
+    "postversion": "git push origin --all && git push origin --tags",
+    "git-log": "git log --pretty='%cd * %h %s' --date=short",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "liquidjs": "liquidjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack.git/"
+  },
+  "bugs": {
+    "url": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/issues/"
+  },
+  "homepage": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack#readme",
+  "keywords": [
+    "xpack",
+    "gcc",
+    "arm",
+    "toolchain",
+    "embedded"
+  ],
+  "author": {
+    "name": "Liviu Ionescu",
+    "email": "ilg@livius.net",
+    "url": "https://github.com/ilg-ul/"
+  },
+  "license": "MIT",
+  "xpack": {
+    "minimumXpmRequired": "0.10.2",
+    "binaries": {
+      "destination": "./.content",
+      "baseUrl": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v11.2.1-1.1",
+      "skip": 1,
+      "platforms": {
+        "darwin-arm64": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-darwin-arm64.tar.gz",
+          "sha256": "4253a3263108302efcaae03fc247d2826809e58eb02c6f55a59dc2553b19d810"
+        },
+        "darwin-x64": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-darwin-x64.tar.gz",
+          "sha256": "1e7c0ef244b5a9eb304dda3b2c50668cae956bd33170fb324ccb850395fbbac5"
+        },
+        "linux-arm64": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-linux-arm64.tar.gz",
+          "sha256": "c1a5fd91bbbb3bf258a96439f13e9baa01c3dc368d406ad68acab3c089f2007f"
+        },
+        "linux-arm": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-linux-arm.tar.gz",
+          "sha256": "27913d2fa515da19b91ee06bda362dcf8a5618d1138d85b209b21dc5f3e68478"
+        },
+        "linux-x64": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-linux-x64.tar.gz",
+          "sha256": "898649436d523b4dc552fb5602a9511089bb30e7df1cba3db401e895c04f12b9"
+        },
+        "win32-x64": {
+          "fileName": "xpack-arm-none-eabi-gcc-11.2.1-1.1-win32-x64.zip",
+          "sha256": "a9327ff3a764a2cabfe385921f02d90e9e424d2c8fb504a3600e598fcea99e7c"
+        }
+      }
+    },
+    "bin": {
+      "arm-none-eabi-addr2line": "./.content/bin/arm-none-eabi-addr2line",
+      "arm-none-eabi-ar": "./.content/bin/arm-none-eabi-ar",
+      "arm-none-eabi-as": "./.content/bin/arm-none-eabi-as",
+      "arm-none-eabi-as-py3": "./.content/bin/arm-none-eabi-as-py3",
+      "arm-none-eabi-c++": "./.content/bin/arm-none-eabi-c++",
+      "arm-none-eabi-c++filt": "./.content/bin/arm-none-eabi-c++filt",
+      "arm-none-eabi-cpp": "./.content/bin/arm-none-eabi-cpp",
+      "arm-none-eabi-elfedit": "./.content/bin/arm-none-eabi-elfedit",
+      "arm-none-eabi-g++": "./.content/bin/arm-none-eabi-g++",
+      "arm-none-eabi-gcc": "./.content/bin/arm-none-eabi-gcc",
+      "arm-none-eabi-gcc-ar": "./.content/bin/arm-none-eabi-gcc-ar",
+      "arm-none-eabi-gcc-nm": "./.content/bin/arm-none-eabi-gcc-nm",
+      "arm-none-eabi-gcc-ranlib": "./.content/bin/arm-none-eabi-gcc-ranlib",
+      "arm-none-eabi-gcov": "./.content/bin/arm-none-eabi-gcov",
+      "arm-none-eabi-gcov-dump": "./.content/bin/arm-none-eabi-gcov-dump",
+      "arm-none-eabi-gcov-tool": "./.content/bin/arm-none-eabi-gcov-tool",
+      "arm-none-eabi-gdb": "./.content/bin/arm-none-eabi-gdb",
+      "arm-none-eabi-gdb-add-index": "./.content/bin/arm-none-eabi-gdb-add-index",
+      "arm-none-eabi-gdb-add-index-py3": "./.content/bin/arm-none-eabi-gdb-add-index-py3",
+      "arm-none-eabi-gdb-py3": "./.content/bin/arm-none-eabi-gdb-py3",
+      "arm-none-eabi-gfortran": "./.content/bin/arm-none-eabi-gfortran",
+      "arm-none-eabi-gprof": "./.content/bin/arm-none-eabi-gprof",
+      "arm-none-eabi-gprof-py3": "./.content/bin/arm-none-eabi-gprof-py3",
+      "arm-none-eabi-ld": "./.content/bin/arm-none-eabi-ld",
+      "arm-none-eabi-ld.bfd": "./.content/bin/arm-none-eabi-ld.bfd",
+      "arm-none-eabi-lto-dump": "./.content/bin/arm-none-eabi-lto-dump",
+      "arm-none-eabi-nm": "./.content/bin/arm-none-eabi-nm",
+      "arm-none-eabi-objcopy": "./.content/bin/arm-none-eabi-objcopy",
+      "arm-none-eabi-objdump": "./.content/bin/arm-none-eabi-objdump",
+      "arm-none-eabi-ranlib": "./.content/bin/arm-none-eabi-ranlib",
+      "arm-none-eabi-readelf": "./.content/bin/arm-none-eabi-readelf",
+      "arm-none-eabi-size": "./.content/bin/arm-none-eabi-size",
+      "arm-none-eabi-strings": "./.content/bin/arm-none-eabi-strings",
+      "arm-none-eabi-strip": "./.content/bin/arm-none-eabi-strip"
+    },
+    "properties": {
+      "appName": "GNU Arm Embedded GCC",
+      "appLCName": "arm-none-eabi-gcc",
+      "platforms": "all",
+      "LIQUIDJS": "liquidjs '{ \"APP_NAME\": \"{{ properties.appName }}\", \"APP_LC_NAME\": \"{{ properties.appLCName }}\", \"platforms\": \"{{ properties.platforms }}\" }'"
+    },
+    "actions": {
+      "generate-workflows": [
+        "mkdir -p .github/workflows/",
+        "cp scripts/helper/templates/body-github-pre-releases-test.md .github/workflows/",
+        "cat scripts/helper/templates/build-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-all.yml",
+        "cat scripts/helper/templates/build-xbbli-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-xbbli.yml",
+        "cat scripts/helper/templates/build-xbbla32-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-xbbla32.yml",
+        "cat scripts/helper/templates/build-xbbla64-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-xbbla64.yml",
+        "cat scripts/helper/templates/build-xbbmi-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-xbbmi.yml",
+        "cat scripts/helper/templates/build-xbbma-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/build-xbbma.yml",
+        "cat scripts/helper/templates/test-prime-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-prime.yml",
+        "cat scripts/helper/templates/test-docker-linux-intel-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-docker-linux-intel.yml",
+        "cat scripts/helper/templates/test-docker-linux-arm-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-docker-linux-arm.yml",
+        "cat scripts/helper/templates/publish-release-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/publish-release.yml",
+        "cat scripts/helper/templates/test-xpm-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/test-xpm.yml",
+        "cat scripts/helper/templates/deep-clean-liquid.yml | {{ properties.LIQUIDJS }} > .github/workflows/deep-clean.yml"
+      ],
+      "trigger-workflow-build-all": "bash scripts/helper/trigger-workflow-build.sh",
+      "trigger-workflow-build-xbbli": "bash scripts/helper/trigger-workflow-build.sh --machine xbbli",
+      "trigger-workflow-build-xbbla32": "bash scripts/helper/trigger-workflow-build.sh --machine xbbla32",
+      "trigger-workflow-build-xbbla64": "bash scripts/helper/trigger-workflow-build.sh --machine xbbla64",
+      "trigger-workflow-build-xbbmi": "bash scripts/helper/trigger-workflow-build.sh --machine xbbmi",
+      "trigger-workflow-build-xbbma": "bash scripts/helper/trigger-workflow-build.sh --machine xbbma",
+      "trigger-workflow-test-prime": "bash scripts/helper/tests/trigger-workflow-test-prime.sh",
+      "trigger-workflow-test-docker-linux-intel": "bash scripts/helper/tests/trigger-workflow-test-docker-linux-intel.sh",
+      "trigger-workflow-test-docker-linux-arm": "bash scripts/helper/tests/trigger-workflow-test-docker-linux-arm.sh",
+      "trigger-travis-macos": "bash scripts/helper/tests/trigger-travis-macos.sh",
+      "trigger-workflow-publish-release": "bash scripts/helper/trigger-workflow-publish-release.sh",
+      "generate-jekyll-post": "bash scripts/helper/generate-jekyll-post.sh",
+      "update-package-binaries": "bash scripts/helper/update-package-binaries.sh",
+      "trigger-workflow-test-xpm": "bash scripts/helper/tests/trigger-workflow-test-xpm.sh",
+      "trigger-workflow-deep-clean": "bash scripts/helper/trigger-workflow-deep-clean.sh"
+    }
+  },
+  "bundleDependencies": [],
+  "devDependencies": {
+    "liquidjs": "^9.25.1"
+  }
+}
